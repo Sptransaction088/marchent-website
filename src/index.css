@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    box-sizing: border-box;
+    font-family: "Jost", sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 16px;
+  }
+  
+  /* Optional: Ensure all elements inherit box-sizing */
+  *, *:before, *:after {
+    box-sizing: inherit;
+  }
