@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Search,
   Filter,
@@ -16,82 +16,85 @@ import {
   ListFilter,
   FileText,
   Trash2,
-  MoreHorizontal
-} from 'lucide-react';
+  MoreHorizontal,
+} from "lucide-react";
 
 export default function Transactions() {
-  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [filterOpen, setFilterOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTxnStatus, setSelectedTxnStatus] = useState('all');
-  const [sortConfig, setSortConfig] = useState({ field: 'txndate', direction: 'desc' });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTxnStatus, setSelectedTxnStatus] = useState("all");
+  const [sortConfig, setSortConfig] = useState({
+    field: "txndate",
+    direction: "desc",
+  });
 
   // Sample transaction data
   const [transactions, setTransactions] = useState([
     {
-      merchantCode: 'MC12345',
-      merchantFirstName: 'Acme',
-      merchantLastName: 'Corp',
-      merchantTxnId: 'MTXN9876',
+      merchantCode: "MC12345",
+      merchantFirstName: "Acme",
+      merchantLastName: "Corp",
+      merchantTxnId: "MTXN9876",
       txnAmount: 100,
       finalAmount: 100,
-      txnStatus: 'success',
-      bankStatus: 'approved',
-      rrn: '123456789012',
-      bankTxnId: 'BTXN001',
-      custMobileNo: '9876543210',
-      custVpa: 'john@upi',
-      custName: 'John Smith',
-      payerVpa: 'john@upi',
-      upiRefId: 'UTR123',
-      txndate: '2025-12-24',
-      time: '14:35:28',
-      currencyType: 'INR',
-      paymentMode: 'UPI',
+      txnStatus: "success",
+      bankStatus: "approved",
+      rrn: "123456789012",
+      bankTxnId: "BTXN001",
+      custMobileNo: "9876543210",
+      custVpa: "john@upi",
+      custName: "John Smith",
+      payerVpa: "john@upi",
+      upiRefId: "UTR123",
+      txndate: "2025-12-24",
+      time: "14:35:28",
+      currencyType: "INR",
+      paymentMode: "UPI",
     },
     {
-      merchantCode: 'MC67890',
-      merchantFirstName: 'Beta',
-      merchantLastName: 'Solutions',
-      merchantTxnId: 'MTXN5432',
+      merchantCode: "MC67890",
+      merchantFirstName: "Beta",
+      merchantLastName: "Solutions",
+      merchantTxnId: "MTXN5432",
       txnAmount: 500,
       finalAmount: 500,
-      txnStatus: 'failed',
-      bankStatus: 'rejected',
-      rrn: '987654321012',
-      bankTxnId: 'BTXN002',
-      custMobileNo: '9876543211',
-      custVpa: 'sarah@upi',
-      custName: 'Sarah Johnson',
-      payerVpa: 'sarah@upi',
-      upiRefId: 'UTR456',
-      txndate: '2025-12-24',
-      time: '12:22:18',
-      currencyType: 'INR',
-      paymentMode: 'IMPS',
+      txnStatus: "failed",
+      bankStatus: "rejected",
+      rrn: "987654321012",
+      bankTxnId: "BTXN002",
+      custMobileNo: "9876543211",
+      custVpa: "sarah@upi",
+      custName: "Sarah Johnson",
+      payerVpa: "sarah@upi",
+      upiRefId: "UTR456",
+      txndate: "2025-12-24",
+      time: "12:22:18",
+      currencyType: "INR",
+      paymentMode: "IMPS",
     },
   ]);
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'success':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'failed':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'pending':
-        return 'bg-amber-100 text-amber-800 border-amber-200';
+      case "success":
+        return "bg-emerald-100 text-emerald-800 border-emerald-200";
+      case "failed":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "pending":
+        return "bg-amber-100 text-amber-800 border-amber-200";
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'success':
+      case "success":
         return <Check size={14} className="text-emerald-500" />;
-      case 'failed':
+      case "failed":
         return <X size={14} className="text-red-500" />;
-      case 'pending':
+      case "pending":
         return <Clock size={14} className="text-amber-500" />;
       default:
         return null;
@@ -99,27 +102,27 @@ export default function Transactions() {
   };
 
   const formatAmount = (amount, currencyType) => {
-    const formatter = new Intl.NumberFormat('en-IN', {
-      style: 'currency',
+    const formatter = new Intl.NumberFormat("en-IN", {
+      style: "currency",
       currency: currencyType,
-      minimumFractionDigits: 2
+      minimumFractionDigits: 2,
     });
     return formatter.format(amount);
   };
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     });
   };
 
   const handleSort = (field) => {
-    let direction = 'asc';
-    if (sortConfig.field === field && sortConfig.direction === 'asc') {
-      direction = 'desc';
+    let direction = "asc";
+    if (sortConfig.field === field && sortConfig.direction === "asc") {
+      direction = "desc";
     }
     setSortConfig({ field, direction });
   };
@@ -128,7 +131,7 @@ export default function Transactions() {
     if (sortConfig.field !== field) {
       return <ChevronDown size={14} className="text-gray-400" />;
     }
-    return sortConfig.direction === 'asc' ? (
+    return sortConfig.direction === "asc" ? (
       <ArrowUp size={14} className="text-blue-600" />
     ) : (
       <ArrowDown size={14} className="text-blue-600" />
@@ -136,48 +139,53 @@ export default function Transactions() {
   };
 
   // Filter and sort transactions
-  const filteredTransactions = transactions.filter(transaction => {
-    // Apply status filter
-    if (selectedTxnStatus !== 'all' && transaction.txnStatus !== selectedTxnStatus) {
-      return false;
-    }
+  const filteredTransactions = transactions
+    .filter((transaction) => {
+      // Apply status filter
+      if (
+        selectedTxnStatus !== "all" &&
+        transaction.txnStatus !== selectedTxnStatus
+      ) {
+        return false;
+      }
 
-    // Apply search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        transaction.merchantCode.toLowerCase().includes(query) ||
-        transaction.merchantFirstName.toLowerCase().includes(query) ||
-        transaction.merchantLastName.toLowerCase().includes(query) ||
-        transaction.merchantTxnId.toLowerCase().includes(query) ||
-        transaction.txnAmount.toString().includes(query) ||
-        transaction.finalAmount.toString().includes(query) ||
-        transaction.txnStatus.toLowerCase().includes(query) ||
-        transaction.bankStatus?.toLowerCase().includes(query) ||
-        transaction.rrn?.includes(query) ||
-        transaction.bankTxnId?.toLowerCase().includes(query) ||
-        transaction.custMobileNo?.includes(query) ||
-        transaction.custVpa?.toLowerCase().includes(query) ||
-        transaction.custName?.toLowerCase().includes(query) ||
-        transaction.payerVpa?.toLowerCase().includes(query) ||
-        transaction.upiRefId?.toLowerCase().includes(query) ||
-        formatDate(transaction.txndate).toLowerCase().includes(query) ||
-        transaction.time.toLowerCase().includes(query)
-      );
-    }
+      // Apply search query
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return (
+          transaction.merchantCode.toLowerCase().includes(query) ||
+          transaction.merchantFirstName.toLowerCase().includes(query) ||
+          transaction.merchantLastName.toLowerCase().includes(query) ||
+          transaction.merchantTxnId.toLowerCase().includes(query) ||
+          transaction.txnAmount.toString().includes(query) ||
+          transaction.finalAmount.toString().includes(query) ||
+          transaction.txnStatus.toLowerCase().includes(query) ||
+          transaction.bankStatus?.toLowerCase().includes(query) ||
+          transaction.rrn?.includes(query) ||
+          transaction.bankTxnId?.toLowerCase().includes(query) ||
+          transaction.custMobileNo?.includes(query) ||
+          transaction.custVpa?.toLowerCase().includes(query) ||
+          transaction.custName?.toLowerCase().includes(query) ||
+          transaction.payerVpa?.toLowerCase().includes(query) ||
+          transaction.upiRefId?.toLowerCase().includes(query) ||
+          formatDate(transaction.txndate).toLowerCase().includes(query) ||
+          transaction.time.toLowerCase().includes(query)
+        );
+      }
 
-    return true;
-  }).sort((a, b) => {
-    const { field, direction } = sortConfig;
+      return true;
+    })
+    .sort((a, b) => {
+      const { field, direction } = sortConfig;
 
-    if (a[field] < b[field]) {
-      return direction === 'asc' ? -1 : 1;
-    }
-    if (a[field] > b[field]) {
-      return direction === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
+      if (a[field] < b[field]) {
+        return direction === "asc" ? -1 : 1;
+      }
+      if (a[field] > b[field]) {
+        return direction === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -199,10 +207,7 @@ export default function Transactions() {
               <Download size={16} className="mr-2" />
               Export
             </button>
-            <button className="flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              <FileText size={16} className="mr-2" />
-              Generate Report
-            </button>
+           
           </div>
         </div>
 
@@ -220,7 +225,9 @@ export default function Transactions() {
                     type="date"
                     className="pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     value={dateRange.start}
-                    onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                    onChange={(e) =>
+                      setDateRange({ ...dateRange, start: e.target.value })
+                    }
                   />
                 </div>
                 <span className="text-gray-500">to</span>
@@ -228,7 +235,9 @@ export default function Transactions() {
                   type="date"
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   value={dateRange.end}
-                  onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                  onChange={(e) =>
+                    setDateRange({ ...dateRange, end: e.target.value })
+                  }
                 />
               </div>
 
@@ -240,13 +249,20 @@ export default function Transactions() {
                 >
                   <ListFilter size={16} className="mr-2 text-gray-500" />
                   Filters
-                  <ChevronDown size={16} className={`ml-2 text-gray-500 transition-transform ${filterOpen ? 'transform rotate-180' : ''}`} />
+                  <ChevronDown
+                    size={16}
+                    className={`ml-2 text-gray-500 transition-transform ${
+                      filterOpen ? "transform rotate-180" : ""
+                    }`}
+                  />
                 </button>
 
                 {filterOpen && (
                   <div className="absolute z-10 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg py-2 px-4">
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Transaction Status</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Transaction Status
+                      </label>
                       <select
                         className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         value={selectedTxnStatus}
@@ -262,7 +278,7 @@ export default function Transactions() {
                       <button
                         className="text-sm text-blue-600 hover:text-blue-800"
                         onClick={() => {
-                          setSelectedTxnStatus('all');
+                          setSelectedTxnStatus("all");
                         }}
                       >
                         Reset filters
@@ -287,7 +303,6 @@ export default function Transactions() {
               </div>
             </div>
           </div>
-
         </div>
 
         {/* Transactions table */}
@@ -296,106 +311,209 @@ export default function Transactions() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('merchantCode')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("merchantCode")}
+                    >
                       Merchant Code
-                      {getSortIcon('merchantCode')}
+                      {getSortIcon("merchantCode")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('merchantFirstName')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("merchantFirstName")}
+                    >
                       Merchant First Name
-                      {getSortIcon('merchantFirstName')}
+                      {getSortIcon("merchantFirstName")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('merchantLastName')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("merchantLastName")}
+                    >
                       Merchant Last Name
-                      {getSortIcon('merchantLastName')}
+                      {getSortIcon("merchantLastName")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('merchantTxnId')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("merchantTxnId")}
+                    >
                       Merchant TXN ID
-                      {getSortIcon('merchantTxnId')}
+                      {getSortIcon("merchantTxnId")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('txnAmount')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("txnAmount")}
+                    >
                       TXN Amount
-                      {getSortIcon('txnAmount')}
+                      {getSortIcon("txnAmount")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('finalAmount')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("finalAmount")}
+                    >
                       Final Amount
-                      {getSortIcon('finalAmount')}
+                      {getSortIcon("finalAmount")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('txnStatus')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("txnStatus")}
+                    >
                       TXN Status
-                      {getSortIcon('txnStatus')}
+                      {getSortIcon("txnStatus")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('bankStatus')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("bankStatus")}
+                    >
                       Bank Status
-                      {getSortIcon('bankStatus')}
+                      {getSortIcon("bankStatus")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('rrn')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("rrn")}
+                    >
                       RRN
-                      {getSortIcon('rrn')}
+                      {getSortIcon("rrn")}
                     </div>
                   </th>
-                  <th scope="col" classNamescope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('bankTxnId')}>
+                  <th
+                    scope="col"
+                    classNamescope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("bankTxnId")}
+                    >
                       Bank TXN ID
-                      {getSortIcon('bankTxnId')}
+                      {getSortIcon("bankTxnId")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('custMobileNo')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("custMobileNo")}
+                    >
                       Cust. Mobile No.
-                      {getSortIcon('custMobileNo')}
+                      {getSortIcon("custMobileNo")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('custVpa')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("custVpa")}
+                    >
                       Cust. VPA
-                      {getSortIcon('custVpa')}
+                      {getSortIcon("custVpa")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('custName')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("custName")}
+                    >
                       Cust. Name
-                      {getSortIcon('custName')}
+                      {getSortIcon("custName")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('payerVpa')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("payerVpa")}
+                    >
                       Payer VPA
-                      {getSortIcon('payerVpa')}
+                      {getSortIcon("payerVpa")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('upiRefId')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("upiRefId")}
+                    >
                       UPI Ref ID
-                      {getSortIcon('upiRefId')}
+                      {getSortIcon("upiRefId")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('txndate')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("txndate")}
+                    >
                       TXN Date
-                      {getSortIcon('txndate')}
+                      {getSortIcon("txndate")}
                     </div>
                   </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center cursor-pointer" onClick={() => handleSort('time')}>
+                  <th
+                    scope="col"
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleSort("time")}
+                    >
                       TXN Time
-                      {getSortIcon('time')}
+                      {getSortIcon("time")}
                     </div>
                   </th>
                 </tr>
@@ -403,33 +521,56 @@ export default function Transactions() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredTransactions.length > 0 ? (
                   filteredTransactions.map((transaction) => (
-                    <tr key={`${transaction.merchantTxnId}-${transaction.txndate}`} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={`${transaction.merchantTxnId}-${transaction.txndate}`}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-3 py-3 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{transaction.merchantCode}</div>
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{transaction.merchantFirstName}</div>
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{transaction.merchantLastName}</div>
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{transaction.merchantTxnId}</div>
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {formatAmount(transaction.txnAmount, transaction.currencyType)}
+                        <div className="text-sm text-gray-900">
+                          {transaction.merchantCode}
                         </div>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {formatAmount(transaction.finalAmount, transaction.currencyType)}
+                          {transaction.merchantFirstName}
                         </div>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(transaction.txnStatus)}`}>
+                        <div className="text-sm font-medium text-gray-900">
+                          {transaction.merchantLastName}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {transaction.merchantTxnId}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {formatAmount(
+                            transaction.txnAmount,
+                            transaction.currencyType
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {formatAmount(
+                            transaction.finalAmount,
+                            transaction.currencyType
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
+                            transaction.txnStatus
+                          )}`}
+                        >
                           {getStatusIcon(transaction.txnStatus)}
-                          <span className="ml-1 capitalize">{transaction.txnStatus}</span>
+                          <span className="ml-1 capitalize">
+                            {transaction.txnStatus}
+                          </span>
                         </span>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
@@ -448,7 +589,9 @@ export default function Transactions() {
                         {transaction.custVpa}
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{transaction.custName}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {transaction.custName}
+                        </div>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
                         {transaction.payerVpa}
@@ -457,10 +600,14 @@ export default function Transactions() {
                         {transaction.upiRefId}
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formatDate(transaction.txndate)}</div>
+                        <div className="text-sm text-gray-900">
+                          {formatDate(transaction.txndate)}
+                        </div>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{transaction.time}</div>
+                        <div className="text-sm text-gray-900">
+                          {transaction.time}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -469,8 +616,12 @@ export default function Transactions() {
                     <td colSpan="16" className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center">
                         <Search size={40} className="text-gray-400 mb-3" />
-                        <p className="text-gray-500 text-lg font-medium">No transactions found</p>
-                        <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filter criteria</p>
+                        <p className="text-gray-500 text-lg font-medium">
+                          No transactions found
+                        </p>
+                        <p className="text-gray-400 text-sm mt-1">
+                          Try adjusting your search or filter criteria
+                        </p>
                       </div>
                     </td>
                   </tr>
@@ -493,15 +644,28 @@ export default function Transactions() {
               <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm text-gray-700">
-                    Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredTransactions.length}</span> of{' '}
-                    <span className="font-medium">{filteredTransactions.length}</span> results
+                    Showing <span className="font-medium">1</span> to{" "}
+                    <span className="font-medium">
+                      {filteredTransactions.length}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-medium">
+                      {filteredTransactions.length}
+                    </span>{" "}
+                    results
                   </p>
                 </div>
                 <div>
-                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <nav
+                    className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                    aria-label="Pagination"
+                  >
                     <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                       <span className="sr-only">Previous</span>
-                      <ChevronDown className="h-5 w-5 transform rotate-90" aria-hidden="true" />
+                      <ChevronDown
+                        className="h-5 w-5 transform rotate-90"
+                        aria-hidden="true"
+                      />
                     </button>
                     <button className="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">
                       1
@@ -511,7 +675,10 @@ export default function Transactions() {
                     </button>
                     <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                       <span className="sr-only">Next</span>
-                      <ChevronDown className="h-5 w-5 transform -rotate-90" aria-hidden="true" />
+                      <ChevronDown
+                        className="h-5 w-5 transform -rotate-90"
+                        aria-hidden="true"
+                      />
                     </button>
                   </nav>
                 </div>

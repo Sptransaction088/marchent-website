@@ -8,24 +8,14 @@ import {
   Settings,
   User,
   ChevronRight,
-  BarChart3,
-  ShieldCheck,
-  LogOut,
-  Sparkles,
   Wallet,
-  Book,
-  Coins,
-  Database,
   Handshake,
+  LogOut,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaBalanceScale, FaCreativeCommonsPdAlt } from "react-icons/fa";
 import { WalletIcon } from "@heroicons/react/16/solid";
 import { LiaRupeeSignSolid } from "react-icons/lia";
-import { PiLayout } from "react-icons/pi";
-import { SiBukalapak } from "react-icons/si";
-import { GiEnergyArrow } from "react-icons/gi";
-import { GrTransaction } from "react-icons/gr";
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(true);
@@ -197,29 +187,6 @@ export default function Sidebar() {
       ],
       color: "from-indigo-400 to-indigo-600",
     },
-
-    {
-      id: "bulk-payout",
-      icon: <PiLayout size={20} />,
-      label: "Bulk Payout",
-      hasSubMenu: true,
-      subItems: [
-        {
-          id: "create-bulk-payout",
-          label: "Create Bulk Payout",
-          path: "/create-bulk-payout",
-          icon: <Coins size={16} />,
-        },
-        {
-          id: "bulk-data",
-          label: "Bulk Data",
-          path: "/bulk-data",
-          icon: <Database size={16} />,
-        },
-      ],
-      color: "from-indigo-400 to-indigo-600",
-    },
-
     {
       id: "reports",
       icon: <FileText size={20} />,
@@ -232,7 +199,6 @@ export default function Sidebar() {
           path: "/payin-transaction-report",
           icon: <FileText size={16} />,
         },
-
         {
           id: "transaction-report-payout",
           label: "Transaction Report (Payout)",
@@ -242,25 +208,16 @@ export default function Sidebar() {
         {
           id: "top-up-reports",
           label: "Top up Reports",
-          path: "/payout-transaction-report",
+          path: "/top-up-report",
           icon: <FileText size={16} />,
         },
       ],
       color: "from-indigo-400 to-indigo-600",
     },
-
-    {
-      id: "transaction-enquiry",
-      icon: <GrTransaction size={20} />,
-      path: "/developers",
-      label: "Transaction Enquiry",
-      color: "from-indigo-400 to-indigo-600",
-    },
-
     {
       id: "developers",
       icon: <Settings size={20} />,
-      path: "/developers",
+      path: "/developer-setting",
       label: "Developer Settings",
       color: "from-indigo-400 to-indigo-600",
     },
@@ -275,41 +232,47 @@ export default function Sidebar() {
 
   return (
     <div
-    ref={containerRef}
-    className={`bg-gradient-to-br from-blue-900 to-indigo-950 h-screen transition-all duration-500 ease-in-out ${
-      expanded ? "w-[250px]" : "w-[100px]"
-    } flex flex-col shadow-xl relative overflow-hidden text-sm p-2`}
-  >
-  
+      ref={containerRef}
+      className={`bg-gradient-to-br from-blue-900 to-indigo-950 h-screen transition-all duration-500 ease-in-out ${
+        expanded ? "w-[250px]" : "w-[100px]"
+      } flex flex-col shadow-xl relative overflow-hidden text-sm p-2`}
+    >
       {/* Animated background effect */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       <div className="absolute inset-0 bg-gradient-to-t from-blue-950/70 to-transparent"></div>
 
       {/* Logo section */}
-      <div className="flex items-center justify-between px-4 h-16 border-b border-blue-800/30 relative z-10">
+      <div className="flex items-center justify-between h-20 border-b border-blue-800/30 relative z-10">
         {expanded ? (
           <div className="flex items-center">
-            <div className="rounded-lg p-1 mr-2 shadow-md">
-              <span className="font-bold text-blue-900"><img src="../assets/logo.png" alt="logo"></img></span>
+            <div className="h-20 w-20">
+              <img
+                src="/assets/logon.png"
+                alt="logo"
+                className="h-full w-full object-contain"
+              />
             </div>
             <span className="text-white font-semibold tracking-wide">
-            Transaction Hub Technology
+              Transaction Hub Technology
             </span>
           </div>
         ) : (
-          <div className="mx-auto  rounded-lg p-1 shadow-md">
-            <span className="font-bold text-blue-900"><img src="../assets/logo.png" alt="logo"></img></span>
+          <div className="mx-auto">
+            <img
+              src="/assets/logon.png"
+              alt="logo"
+              className="h-20 w-20 object-contain"
+            />
           </div>
         )}
         <button
           onClick={toggleExpanded}
           className="text-blue-300 hover:text-white p-1.5 rounded-full hover:bg-blue-800/50 focus:outline-none transition-all hover:shadow-glow"
         >
-          {expanded ? (
-            <ChevronRight size={16} />
-          ) : (
-            <ChevronRight size={16} className="transform rotate-180" />
-          )}
+          <ChevronRight
+            size={16}
+            className={`transition-transform ${expanded ? "rotate-180" : ""}`}
+          />
         </button>
       </div>
 

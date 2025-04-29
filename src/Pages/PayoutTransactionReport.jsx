@@ -267,7 +267,7 @@ export default function Transactions() {
                         <option value="inprogress">InProgress</option>
                         <option value="queued">Queued</option>
                         <option value="success">Success</option>
-                        
+
                         <option value="failed">Failed</option>
                       </select>
                     </div>
@@ -343,7 +343,11 @@ export default function Transactions() {
                         className="flex items-center cursor-pointer"
                         onClick={() => handleSort(key)}
                       >
-                        {key === "txnDate" ? "Date" : key === "time" ? "Time" : key}
+                        {key === "txnDate"
+                          ? "Date"
+                          : key === "time"
+                          ? "Time"
+                          : key}
                         {getSortIcon(key)}
                       </div>
                     </th>
@@ -413,16 +417,16 @@ export default function Transactions() {
                   <tr>
                     <td
                       colSpan="11" // Updated colspan to includeclassName="px-6 py-4 text-center text-sm text-gray-500"
-                      >
-                        No transactions found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    >
+                      No transactions found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
