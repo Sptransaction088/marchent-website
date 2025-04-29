@@ -107,24 +107,8 @@ const AddBalanceDesign = () => {
               <p className="font-medium">Bank Name</p>
               <p>ICICI Bank, Delhi Branch</p>
             </div>
-            <div className="flex justify-between items-center">
-              <p className="font-medium">UTR Reference</p>
-              <div className="flex items-center gap-1">
-                <p>UTR8975436201</p>
-                <button
-                  onClick={() => copyToClipboard("UTR8975436201")}
-                  className="text-indigo-500 hover:text-indigo-700"
-                >
-                  <Copy className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            <div className="flex justify-between items-center">
-              <p className="font-medium">Payment Mode</p>
-              <div className="flex items-center gap-1 bg-blue-100 px-2 py-0.5 rounded-full text-blue-700">
-                <p className="text-xs font-medium">NEFT</p>
-              </div>
-            </div>
+          
+           
           </div>
         </div>
       </div>

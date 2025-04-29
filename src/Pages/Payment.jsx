@@ -911,46 +911,7 @@ function PaymentForm() {
           </div>
         </div>
 
-        {/* User Action Buttons */}
-        <div className="mt-6 flex flex-wrap gap-3">
-          <button
-            className="flex-1 flex items-center justify-center py-2 px-3 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-700 text-sm font-medium transition-colors"
-            onClick={() => {
-              // Clear all form data
-              setBankDetails({
-                name: "",
-                bankName: "",
-                ifscCode: "",
-                accountNo: "",
-                confirmAccountNo: "",
-                branchName: "",
-                amount: "",
-                mobileNumber: "",
-              });
-              setUpiDetails({
-                vpa: "",
-                amount: "",
-              });
-              setBankTransferType("");
-              setIsValidated(false);
-              setErrors({});
-              setActiveStep(1);
-            }}
-          >
-            <span className="material-icons text-sm mr-1">refresh</span>
-            Reset Form
-          </button>
-          <button
-            className="flex-1 flex items-center justify-center py-2 px-3 bg-indigo-100 hover:bg-indigo-200 rounded-md text-indigo-700 text-sm font-medium transition-colors"
-            onClick={() => {
-              // Save draft functionality would go here
-              alert("Form data saved as draft");
-            }}
-          >
-            <span className="material-icons text-sm mr-1">save</span>
-            Save Draft
-          </button>
-        </div>
+        
       </div>
 
       {/* Faux Material Icons - Added since we're using material icons in the UI */}
