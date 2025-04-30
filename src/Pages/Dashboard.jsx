@@ -1,5 +1,5 @@
 // Dashboard Component - Import this into your main application
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
@@ -15,6 +15,43 @@ export default function Dashboard() {
     endDate: "2025-04-23",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [apiData, setApiData] = useState(null);
+  
+  // Fetch API data on component mount and when filter is applied
+  useEffect(() => {
+    fetchApiData();
+  }, []);
+
+  // Function to fetch data from API
+  const fetchApiData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiHomeSummary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate
+        })
+      });
+      
+      const data = await response.json();
+      console.log('API response:', data);
+      setApiData(data);
+      setSuccess(true);
+    } catch (err) {
+      console.error('API error:', err);
+      setError('Failed to fetch data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Handle date change
   const handleDateChange = (e) => {
     const { name, value } = e.target;
@@ -22,6 +59,11 @@ export default function Dashboard() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  // Apply filter - fetch new data with selected date range
+  const applyFilter = () => {
+    fetchApiData();
   };
 
   // Content based on selected payment section
@@ -35,6 +77,7 @@ export default function Dashboard() {
         <OverviewSection
           setActiveSection={setActiveSection}
           dateRange={dateRange}
+          apiData={apiData}
         />
       );
     }
@@ -105,8 +148,12 @@ export default function Dashboard() {
                 className="border border-gray-200 rounded-md p-2 text-sm"
               />
             </div>
-            <button className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md text-sm transition-colors">
-              Apply Filter
+            <button 
+              onClick={applyFilter}
+              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md text-sm transition-colors"
+              disabled={loading}
+            >
+              {loading ? 'Loading...' : 'Apply Filter'}
             </button>
           </div>
         </div>
@@ -119,24 +166,24 @@ export default function Dashboard() {
 }
 
 // Overview Section with the two main buttons
-function OverviewSection({ setActiveSection, dateRange }) {
+function OverviewSection({ setActiveSection, dateRange, apiData }) {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatsCard
           title="Total Transactions"
-          value="₹24,780.00"
+          value={apiData?.totalAmount || "₹24,780.00"}
           icon={<CreditCard className="text-purple-500" />}
         />
         <StatsCard
           title="Pay In"
-          value="₹18,230.00"
+          value={apiData?.payInAmount || "₹18,230.00"}
           icon={<ArrowDownCircle className="text-green-500" />}
         />
         <StatsCard
           title="Pay Out"
-          value="₹6,550.00"
+          value={apiData?.payOutAmount || "₹6,550.00"}
           icon={<ArrowUpCircle className="text-red-500" />}
         />
       </div>
@@ -169,7 +216,7 @@ function OverviewSection({ setActiveSection, dateRange }) {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {[
+              {(apiData?.transactions || [
                 {
                   type: "Pay In",
                   party: "John Smith",
@@ -198,7 +245,7 @@ function OverviewSection({ setActiveSection, dateRange }) {
                   date: "Apr 20, 2025",
                   status: "Pending",
                 },
-              ].map((transaction, i) => (
+              ]).map((transaction, i) => (
                 <tr key={i}>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <div className="flex items-center">
