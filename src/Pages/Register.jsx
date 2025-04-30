@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ArrowRight,
   CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 
 export default function Register() {
@@ -17,6 +18,8 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiResponse, setApiResponse] = useState({ success: null, message: "" });
 
   const [registerForm, setRegisterForm] = useState({
     firstName: "",
@@ -51,13 +54,81 @@ export default function Register() {
     setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (currentStep < 3) {
       nextStep();
-    } else {
-      // Handle registration submission
-      console.log("Registration form submitted:", registerForm);
+      return;
+    }
+    
+    // Form validation
+    if (registerForm.password !== registerForm.confirmPassword) {
+      setApiResponse({
+        success: false,
+        message: "Passwords do not match."
+      });
+      return;
+    }
+    
+    if (!registerForm.agreeToTerms) {
+      setApiResponse({
+        success: false,
+        message: "You must agree to the Terms of Service and Privacy Policy."
+      });
+      return;
+    }
+    
+    // Prepare API payload
+    const apiPayload = {
+      firstName: registerForm.firstName,
+      lastName: registerForm.lastName,
+      email: registerForm.email,
+      phone: registerForm.phone,
+      password: registerForm.password,
+      businessName: registerForm.businessName,
+      businessType: registerForm.businessType,
+    };
+    
+    setIsSubmitting(true);
+    setApiResponse({ success: null, message: "" });
+    
+    try {
+      // Make API call
+      const response = await fetch('https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiRegister', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(apiPayload),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setApiResponse({
+          success: true,
+          message: "Account created successfully! You'll be redirected to login."
+        });
+        
+        // Redirect to login page after successful registration
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 3000);
+      } else {
+        setApiResponse({
+          success: false,
+          message: data.message || "Registration failed. Please try again."
+        });
+      }
+    } catch (error) {
+      setApiResponse({
+        success: false,
+        message: "Network error. Please check your connection and try again."
+      });
+      console.error("API Error:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -107,24 +178,44 @@ export default function Register() {
     );
   };
 
+  // API response notification
+  const renderApiResponse = () => {
+    if (apiResponse.success === null) return null;
+    
+    return (
+      <div className={`p-4 rounded-lg mb-6 flex items-start ${
+        apiResponse.success ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"
+      }`}>
+        {apiResponse.success ? (
+          <CheckCircle className="flex-shrink-0 w-5 h-5 mr-2" />
+        ) : (
+          <AlertCircle className="flex-shrink-0 w-5 h-5 mr-2" />
+        )}
+        <span>{apiResponse.message}</span>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         {/* Logo and header */}
         <div className="mb-6 text-center">
           <div className="inline-flex items-center justify-center">
-          <div className="h-24 w-24 flex items-center justify-center">
+            <div className="h-24 w-24 flex items-center justify-center">
               <img src="../assets/logon.png" alt="logo" />
             </div>
           </div>
          
-          <p className="text-black-600">Create your merchant account</p>
+          <p className="text-slate-600">Create your merchant account</p>
         </div>
 
         {renderStepIndicator()}
 
         {/* Card container */}
         <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+          {renderApiResponse()}
+          
           <form onSubmit={handleSubmit}>
             <div className="p-6 md:p-8">
               {/* Step 1: Personal Information */}
@@ -519,6 +610,7 @@ export default function Register() {
                     type="button"
                     onClick={prevStep}
                     className="flex items-center px-4 py-2 border border-slate-300 rounded-lg shadow-sm bg-white text-slate-700 hover:bg-slate-50"
+                    disabled={isSubmitting}
                   >
                     <ChevronLeft size={16} className="mr-2" />
                     Back
@@ -535,11 +627,30 @@ export default function Register() {
 
                 <button
                   type="submit"
-                  className="flex items-center px-6 py-2 border border-transparent rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  disabled={currentStep === 3 && !registerForm.agreeToTerms}
+                  className={`flex items-center px-6 py-2 border border-transparent rounded-lg shadow-sm text-white 
+                    ${isSubmitting ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'}
+                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                  disabled={
+                    isSubmitting || 
+                    (currentStep === 3 && !registerForm.agreeToTerms) ||
+                    (currentStep === 2 && 
+                      registerForm.password !== registerForm.confirmPassword)
+                  }
                 >
-                  {currentStep < 3 ? "Continue" : "Create Account"}
-                  <ArrowRight size={16} className="ml-2" />
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      {currentStep < 3 ? "Continue" : "Create Account"}
+                      <ArrowRight size={16} className="ml-2" />
+                    </>
+                  )}
                 </button>
               </div>
             </div>
