@@ -19,7 +19,7 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [apiData, setApiData] = useState(null);
-  
+
   // Fetch API data on component mount and when filter is applied
   useEffect(() => {
     fetchApiData();
@@ -29,24 +29,27 @@ export default function Dashboard() {
   const fetchApiData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiHomeSummary', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate
-        })
-      });
-      
+      const response = await fetch(
+        "https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiHomeSummary",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            startDate: dateRange.startDate,
+            endDate: dateRange.endDate,
+          }),
+        }
+      );
+
       const data = await response.json();
-      console.log('API response:', data);
+      console.log("API response:", data);
       setApiData(data);
       setSuccess(true);
     } catch (err) {
-      console.error('API error:', err);
-      setError('Failed to fetch data');
+      console.error("API error:", err);
+      setError("Failed to fetch data");
     } finally {
       setLoading(false);
     }
@@ -148,12 +151,12 @@ export default function Dashboard() {
                 className="border border-gray-200 rounded-md p-2 text-sm"
               />
             </div>
-            <button 
+            <button
               onClick={applyFilter}
               className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md text-sm transition-colors"
               disabled={loading}
             >
-              {loading ? 'Loading...' : 'Apply Filter'}
+              {loading ? "Loading..." : "Apply Filter"}
             </button>
           </div>
         </div>
@@ -216,36 +219,38 @@ function OverviewSection({ setActiveSection, dateRange, apiData }) {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {(apiData?.transactions || [
-                {
-                  type: "Pay In",
-                  party: "John Smith",
-                  amount: "+₹1,240.00",
-                  date: "Today, 10:30 AM",
-                  status: "Completed",
-                },
-                {
-                  type: "Pay Out",
-                  party: "ABC Suppliers",
-                  amount: "-₹850.00",
-                  date: "Yesterday",
-                  status: "Completed",
-                },
-                {
-                  type: "Pay In",
-                  party: "Sarah Johnson",
-                  amount: "+₹520.00",
-                  date: "Apr 21, 2025",
-                  status: "Completed",
-                },
-                {
-                  type: "Pay Out",
-                  party: "XYZ Services",
-                  amount: "-₹330.00",
-                  date: "Apr 20, 2025",
-                  status: "Pending",
-                },
-              ]).map((transaction, i) => (
+              {(
+                apiData?.transactions || [
+                  {
+                    type: "Pay In",
+                    party: "John Smith",
+                    amount: "+₹1,240.00",
+                    date: "Today, 10:30 AM",
+                    status: "Completed",
+                  },
+                  {
+                    type: "Pay Out",
+                    party: "ABC Suppliers",
+                    amount: "-₹850.00",
+                    date: "Yesterday",
+                    status: "Completed",
+                  },
+                  {
+                    type: "Pay In",
+                    party: "Sarah Johnson",
+                    amount: "+₹520.00",
+                    date: "Apr 21, 2025",
+                    status: "Completed",
+                  },
+                  {
+                    type: "Pay Out",
+                    party: "XYZ Services",
+                    amount: "-₹330.00",
+                    date: "Apr 20, 2025",
+                    status: "Pending",
+                  },
+                ]
+              ).map((transaction, i) => (
                 <tr key={i}>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <div className="flex items-center">
