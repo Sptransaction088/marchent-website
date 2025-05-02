@@ -33,12 +33,14 @@ const DeveloperSettings = () => {
     
     try {
       const response = await fetch("https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiGetDeveloperSettings", {
-        method: "GET",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Add any required authentication headers here
-          // For example: "Authorization": `Bearer ${yourAuthToken}`
-        }
+          // Add authentication header if needed
+        },
+        body: JSON.stringify({
+          "merchantId": 1  // Using the merchant ID from your example
+        })
       });
       
       if (!response.ok) {
@@ -47,14 +49,12 @@ const DeveloperSettings = () => {
       
       const data = await response.json();
       
-      // Extract API keys and additional data from the response structure
       if (data.success && data.data) {
         setApiKeys({
           public: data.data.apiKey || "",
           secret: data.data.apiSecret || ""
         });
         
-        // Also set the webhook URLs and white IP
         setWebhookUrls({
           payIn: data.data.payInWebHookUrl || "",
           payOut: data.data.payOutWebHookUrl || ""
