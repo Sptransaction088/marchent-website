@@ -1,4 +1,6 @@
+
 import { useState, useEffect } from "react";
+import axios from "axios"; // Ensure axios is installed
 import {
   Check,
   X,
@@ -9,6 +11,7 @@ import {
   Calendar,
   ListFilter,
   Search,
+  Plus,
 } from "lucide-react";
 
 export default function Transactions() {
@@ -73,6 +76,19 @@ export default function Transactions() {
   ]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [payoutForm, setPayoutForm] = useState({
+    merchantId: 1,
+    merchantTxnId: "",
+    custName: "",
+    custBankName: "",
+    custAcountNumber: "",
+    custPhone: "",
+    custIfscCode: "",
+    amount: "",
+  });
+  const [payoutError, setPayoutError] = useState(null);
+  const [payoutSuccess, setPayoutSuccess] = useState(null);
+  const [showPayoutForm, setShowPayoutForm] = useState(false);
 
   // Fetch transactions from API
   useEffect(() => {
@@ -91,47 +107,36 @@ export default function Transactions() {
       };
 
       try {
-        const response = await fetch(
+        const response = await axios.post(
           "https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiPayoutList",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-          }
+          payload,
+          { headers: { "Content-Type": "application/json" } }
         );
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+        if (response.data.success && response.data.code === 0) {
+          const mappedTransactions = (response.data.data || []).map((item) => ({
+            id: item.id || item.transactionId || `temp-${Math.random()}`,
+            txnId: item.txnId || "Unknown",
+            mrchntId: item.mrchntId || item.merchantId || "Unknown",
+            utr: item.utr || "Unknown",
+            amount: parseFloat(item.amount) || 0,
+            status: (item.status || "unknown").toLowerCase(),
+            paymentMode: item.paymentMode || "Unknown",
+            AccNo: item.AccNo || item.accountNumber || "Unknown",
+            ifscCode: item.ifscCode || "Unknown",
+            payerMobile: item.payerMobile || "Unknown",
+            payerEmail: item.payerEmail || "Unknown",
+            time: item.time || item.txnTime || new Date().toISOString(),
+            currencyType: item.currencyType || "INR",
+            txnDate: item.txnDate || item.date || new Date().toISOString().split("T")[0],
+          }));
+          setTransactions(mappedTransactions.length > 0 ? mappedTransactions : transactions);
+        } else {
+          setError("Failed to fetch transactions from API");
         }
-
-        const result = await response.json();
-        console.log("API Response:", result); // Debug: Log API response
-
-        // Map API response to expected format
-        const mappedTransactions = (result.data || []).map((item) => ({
-          id: item.id || item.transactionId || `temp-${Math.random()}`, // Fallback ID
-          txnId: item.txnId || "Unknown",
-          mrchntId: item.mrchntId || item.merchantId || "Unknown",
-          utr: item.utr || "Unknown",
-          amount: parseFloat(item.amount) || 0,
-          status: (item.status || "unknown").toLowerCase(),
-          paymentMode: item.paymentMode || "Unknown",
-          AccNo: item.AccNo || item.accountNumber || "Unknown",
-          ifscCode: item.ifscCode || "Unknown",
-          payerMobile: item.payerMobile || "Unknown",
-          payerEmail: item.payerEmail || "Unknown",
-          time: item.time || item.txnTime || new Date().toISOString(),
-          currencyType: item.currencyType || "INR",
-          txnDate: item.txnDate || item.date || new Date().toISOString().split("T")[0],
-        }));
-
-        console.log("Mapped Transactions:", mappedTransactions); // Debug: Log mapped data
-        setTransactions(mappedTransactions.length > 0 ? mappedTransactions : transactions); // Fallback to sample data if empty
       } catch (err) {
-        console.error("API Error:", err); // Debug: Log error
         setError(`Failed to fetch transactions: ${err.message}`);
+        console.error("API Error:", err);
       } finally {
         setLoading(false);
       }
@@ -139,6 +144,74 @@ export default function Transactions() {
 
     fetchTransactions();
   }, []);
+
+  // Handle payout creation
+  const handlePayoutSubmit = async (e) => {
+    e.preventDefault();
+    setPayoutError(null);
+    setPayoutSuccess(null);
+
+    try {
+      const response = await axios.post(
+        "https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiCreatePayout",
+        payoutForm,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      if (response.data.success && response.data.code === 0) {
+        setPayoutSuccess("Payout created successfully!");
+        setPayoutForm({
+          merchantId: 1,
+          merchantTxnId: "",
+          custName: "",
+          custBankName: "",
+          custAcountNumber: "",
+          custPhone: "",
+          custIfscCode: "",
+          amount: "",
+        });
+        setShowPayoutForm(false);
+        // Refresh transactions
+        const fetchResponse = await axios.post(
+          "https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiPayoutList",
+          {
+            merchantId: 1,
+            startDate: "2025-03-01",
+            endDate: "2025-04-01",
+            txnStatus: "All",
+            searchValue: "",
+            pageNum: 2,
+            pageSize: 100,
+          },
+          { headers: { "Content-Type": "application/json" } }
+        );
+        if (fetchResponse.data.success && fetchResponse.data.code === 0) {
+          const mappedTransactions = (fetchResponse.data.data || []).map((item) => ({
+            id: item.id || item.transactionId || `temp-${Math.random()}`,
+            txnId: item.txnId || "Unknown",
+            mrchntId: item.mrchntId || item.merchantId || "Unknown",
+            utr: item.utr || "Unknown",
+            amount: parseFloat(item.amount) || 0,
+            status: (item.status || "unknown").toLowerCase(),
+            paymentMode: item.paymentMode || "Unknown",
+            AccNo: item.AccNo || item.accountNumber || "Unknown",
+            ifscCode: item.ifscCode || "Unknown",
+            payerMobile: item.payerMobile || "Unknown",
+            payerEmail: item.payerEmail || "Unknown",
+            time: item.time || item.txnTime || new Date().toISOString(),
+            currencyType: item.currencyType || "INR",
+            txnDate: item.txnDate || item.date || new Date().toISOString().split("T")[0],
+          }));
+          setTransactions(mappedTransactions.length > 0 ? mappedTransactions : transactions);
+        }
+      } else {
+        setPayoutError(`Failed to create payout: ${response.data.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      setPayoutError(`Error creating payout: ${err.message}`);
+      console.error("Payout API Error:", err);
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -221,7 +294,6 @@ export default function Transactions() {
   // Filter and sort transactions
   const filteredTransactions = transactions
     .filter((transaction) => {
-      // Apply date filter
       if (dateRange.start && dateRange.end) {
         const txnDate = new Date(transaction.txnDate);
         const startDate = new Date(dateRange.start);
@@ -242,24 +314,18 @@ export default function Transactions() {
           return false;
         }
       }
-
-      // Apply status filter
       if (
         selectedTxnStatus !== "all" &&
         transaction.status !== selectedTxnStatus
       ) {
         return false;
       }
-
-      // Apply payment mode filter
       if (
         selectedPaymentMode !== "all" &&
         transaction.paymentMode !== selectedPaymentMode
       ) {
         return false;
       }
-
-      // Apply search query
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return (
@@ -278,7 +344,6 @@ export default function Transactions() {
           (formatTime(transaction.time) || "").toLowerCase().includes(query)
         );
       }
-
       return true;
     })
     .sort((a, b) => {
@@ -294,9 +359,6 @@ export default function Transactions() {
       return 0;
     });
 
-  // Debug: Log filtered transactions
-  console.log("Filtered Transactions:", filteredTransactions);
-
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-8xl">
@@ -307,13 +369,146 @@ export default function Transactions() {
               View and manage all payment transactions
             </p>
           </div>
+          <button
+            className="mt-4 md:mt-0 flex items-center px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            onClick={() => setShowPayoutForm(!showPayoutForm)}
+          >
+            <Plus size={16} className="mr-2" />
+            {showPayoutForm ? "Hide Payout Form" : "Create Payout"}
+          </button>
         </div>
+
+        {/* Payout Form */}
+        {showPayoutForm && (
+          <div className="bg-white rounded-lg shadow mb-6 p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Create New Payout</h2>
+            {payoutError && (
+              <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+                {payoutError}
+              </div>
+            )}
+            {payoutSuccess && (
+              <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
+                {payoutSuccess}
+              </div>
+            )}
+            <form onSubmit={handlePayoutSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Merchant Transaction ID
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  value={payoutForm.merchantTxnId}
+                  onChange={(e) =>
+                    setPayoutForm({ ...payoutForm, merchantTxnId: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Customer Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  value={payoutForm.custName}
+                  onChange={(e) =>
+                    setPayoutForm({ ...payoutForm, custName: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Bank Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  value={payoutForm.custBankName}
+                  onChange={(e) =>
+                    setPayoutForm({ ...payoutForm, custBankName: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Account Number
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  value={payoutForm.custAcountNumber}
+                  onChange={(e) =>
+                    setPayoutForm({ ...payoutForm, custAcountNumber: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  value={payoutForm.custPhone}
+                  onChange={(e) =>
+                    setPayoutForm({ ...payoutForm, custPhone: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  IFSC Code
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  value={payoutForm.custIfscCode}
+                  onChange={(e) =>
+                    setPayoutForm({ ...payoutForm, custIfscCode: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Amount
+                </label>
+                <input
+                  type="number"
+                  className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  value={payoutForm.amount}
+                  onChange={(e) =>
+                    setPayoutForm({ ...payoutForm, amount: e.target.value })
+                  }
+                  required
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <div className="md:col-span-2 flex justify-end mt-4">
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Submit Payout
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* Filters and search */}
         <div className="bg-white rounded-lg shadow mb-6">
           <div className="p-5 border-b border-gray-200">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              {/* Date filter */}
               <div className="flex items-center space-x-2">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -338,8 +533,6 @@ export default function Transactions() {
                   }
                 />
               </div>
-
-              {/* Filter button */}
               <div className="relative">
                 <button
                   className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -354,7 +547,6 @@ export default function Transactions() {
                     }`}
                   />
                 </button>
-
                 {filterOpen && (
                   <div className="absolute z-10 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg py-2 px-4">
                     <div className="mb-4">
@@ -383,7 +575,6 @@ export default function Transactions() {
                       >
                         <option value="all">All Modes</option>
                         <option value="UPI">UPI</option>
-                        {/* Add other payment modes if available in your data */}
                       </select>
                     </div>
                     <div className="pt-2 flex justify-end border-t border-gray-100 mt-3">
@@ -400,8 +591,6 @@ export default function Transactions() {
                   </div>
                 )}
               </div>
-
-              {/* Search input */}
               <div className="relative flex-grow md:max-w-md">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search size={16} className="text-gray-400" />
@@ -506,10 +695,10 @@ export default function Transactions() {
                             </span>
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
                           {transaction.paymentMode}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-3 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
                             {transaction.AccNo}
                           </div>
@@ -517,7 +706,7 @@ export default function Transactions() {
                             {transaction.payerMobile}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
                           {transaction.ifscCode}
                         </td>
                         <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">

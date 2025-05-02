@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Wallet,
   Banknote,
@@ -15,9 +15,49 @@ const AddBalanceDesign = () => {
   const [showBankDropdown, setShowBankDropdown] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState("");
   const [selectedBank, setSelectedBank] = useState("");
+  const [accountDetails, setAccountDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Function to fetch account details from the API
+  const fetchAccountDetails = async () => {
+    try {
+      const response = await fetch(
+        "https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiGetRechargeAccount",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            merchantId: 1,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success && result.code === 0) {
+        setAccountDetails(result.data);
+      } else {
+        setError("Failed to fetch account details.");
+      }
+    } catch (err) {
+      setError("An error occurred while fetching account details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch account details on component mount
+  useEffect(() => {
+    fetchAccountDetails();
+  }, []);
 
   const copyToClipboard = (text) => {
-    alert(`Copied: ${text}`);
+    navigator.clipboard.writeText(text).then(() => {
+      alert(`Copied: ${text}`);
+    });
   };
 
   const handleMethodSelect = (method) => {
@@ -75,40 +115,52 @@ const AddBalanceDesign = () => {
             Top Up Account
           </h3>
           <div className="border border-gray-300 bg-white rounded-xl p-5 text-sm text-gray-700 space-y-3 group-hover:border-green-300 transition-colors">
-            <div className="flex justify-between items-center">
-              <p className="font-medium">Account Holder</p>
-              <p>Aman Yadav</p>
-            </div>
-            <div className="flex justify-between items-center">
-              <p className="font-medium">Account Number</p>
-              <div className="flex items-center gap-1">
-                <p>9876543210</p>
-                <button
-                  onClick={() => copyToClipboard("9876543210")}
-                  className="text-indigo-500 hover:text-indigo-700"
-                >
-                  <Copy className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            <div className="flex justify-between items-center">
-              <p className="font-medium">IFSC</p>
-              <div className="flex items-center gap-1">
-                <p>ICIC0001234</p>
-                <button
-                  onClick={() => copyToClipboard("ICIC0001234")}
-                  className="text-indigo-500 hover:text-indigo-700"
-                >
-                  <Copy className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            <div className="flex justify-between items-center">
-              <p className="font-medium">Bank Name</p>
-              <p>ICICI Bank, Delhi Branch</p>
-            </div>
-          
-           
+            {loading ? (
+              <p>Loading account details...</p>
+            ) : error ? (
+              <p className="text-red-500">{error}</p>
+            ) : accountDetails ? (
+              <>
+                <div className="flex justify-between items-center">
+                  <p className="font-medium">Account Holder</p>
+                  <p>{accountDetails.topUpAccountHolder}</p>
+                </div>
+                <div className="flex justify-between items-center">
+                  <p className="font-medium">Account Number</p>
+                  <div className="flex items-center gap-1">
+                    <p>{accountDetails.topUpAccountNumber}</p>
+                    <button
+                      onClick={() =>
+                        copyToClipboard(accountDetails.topUpAccountNumber)
+                      }
+                      className="text-indigo-500 hover:text-indigo-700"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <p className="font-medium">IFSC</p>
+                  <div className="flex items-center gap-1">
+                    <p>{accountDetails.topUpIfscCode}</p>
+                    <button
+                      onClick={() =>
+                        copyToClipboard(accountDetails.topUpIfscCode)
+                      }
+                      className="text-indigo-500 hover:text-indigo-700"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <p className="font-medium">Bank Name</p>
+                  <p>{accountDetails.topUpBankName}</p>
+                </div>
+              </>
+            ) : (
+              <p>No account details available.</p>
+            )}
           </div>
         </div>
       </div>
