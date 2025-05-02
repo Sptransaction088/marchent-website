@@ -1,25 +1,70 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
-  User,
-  Settings,
-  CreditCard,
   LogOut,
   ChevronDown,
   Calendar,
-  ExternalLink,
 } from "lucide-react";
 
-export default function Profile() {
+function Profile() {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [merchant, setMerchant] = useState({
+    name: "Loading...",
+    image: "./assets/user.png", // Fallback image
+    memberSince: "Loading...",
+    lastLogin: "Loading...",
+    verificationStatus: "Loading...",
+    businessName: "Loading...",
+    businessCategory: "Loading...",
+    contactNumber: "Loading...",
+    address: "Loading...",
+    bankAccount: "Loading...",
+    kycStatus: "Loading...",
+  });
+  const [error, setError] = useState(null);
 
-  // Merchant profile data (simplified, removing email and role)
-  const merchant = {
-    name: "Alex Thompson",
-    image: "./assets/user.png",
-    memberSince: "Aug 2023",
-    lastLogin: "Today, 10:45 AM",
-    verificationStatus: "Verified",
-  };
+  useEffect(() => {
+    const fetchMerchantProfile = async () => {
+      try {
+        const response = await axios.post(
+          "https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiGetProfile",
+          { merchantId: 1 },
+          { headers: { "Content-Type": "application/json" } }
+        );
+
+        if (response.data.success && response.data.code === 0) {
+          const data = response.data.data;
+          setMerchant({
+            name: data.busiName || "Unknown",
+            image: "./assets/user.png", // API doesn't provide image
+            memberSince: new Date(data.registerDate).toLocaleDateString("en-US", {
+              month: "short",
+              year: "numeric",
+            }),
+            lastLogin: new Date(data.updateTime).toLocaleString("en-US", {
+              dateStyle: "short",
+              timeStyle: "short",
+            }),
+            verificationStatus: data.kycStatus === "approved" ? "Verified" : "Pending",
+            businessName: data.baseBusinessName || "N/A",
+            businessCategory: data.baseEntityType || "N/A",
+            contactNumber: data.baseContactNumber || "N/A",
+            address: `${data.baseAddress}, ${data.baseCity}, ${data.baseState} ${data.basePinCode}`,
+            bankAccount: `${data.bankName} ••••${data.bankAccountNumber.slice(-4)}`,
+            kycStatus: data.kycStatus === "approved" ? "Complete" : "Pending",
+          });
+        } else {
+          setError("Failed to fetch profile data");
+        }
+      } catch (err) {
+        setError("Error connecting to the server. Please try again later.");
+        console.error("API Error:", err);
+      }
+    };
+
+    fetchMerchantProfile();
+  }, []);
 
   return (
     <div className="bg-slate-100 min-h-screen">
@@ -29,9 +74,12 @@ export default function Profile() {
           {/* Logo */}
           <div className="flex items-center">
             <div className="h-10 w-10 items-center justify-center">
-              <img src="../assets/logon.png" alt="logo" />
+              <img
+                src="./assets/logon.png"
+                alt="logo"
+                className="object-contain"
+              />
             </div>
-           
           </div>
 
           {/* Profile dropdown */}
@@ -66,13 +114,10 @@ export default function Profile() {
                       className="w-12 h-12 rounded-full object-cover"
                     />
                     <div>
-                      <p className="font-medium text-slate-800">
-                        {merchant.name}
-                      </p>
+                      <p className="font-medium text-slate-800">{merchant.name}</p>
                     </div>
                   </div>
                 </div>
-
                 <div className="border-t border-slate-100 py-2">
                   <button className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-slate-100">
                     <LogOut size={16} className="mr-3" />
@@ -87,6 +132,11 @@ export default function Profile() {
 
       {/* Main content area */}
       <div className="p-6">
+        {error && (
+          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
         {/* Profile section */}
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
           <div className="bg-gradient-to-r from-purple-600 to-purple-800 h-32 relative">
@@ -105,11 +155,8 @@ export default function Profile() {
           <div className="pt-16 pb-6 px-6">
             <div className="flex flex-wrap items-end justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-slate-800">
-                  {merchant.name}
-                </h2>
+                <h2 className="text-2xl font-bold text-slate-800">{merchant.name}</h2>
               </div>
-
               <div className="flex items-center space-x-2 mt-4 md:mt-0">
                 <div className="flex items-center text-sm text-slate-500">
                   <Calendar size={16} className="mr-1" />
@@ -119,51 +166,47 @@ export default function Profile() {
             </div>
 
             <div className="border-t border-slate-100 pt-6">
-              <h3 className="text-lg font-medium text-slate-800 mb-4">
-                Merchant Details
-              </h3>
-
+              <h3 className="text-lg font-medium text-slate-800 mb-4">Merchant Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-slate-500 mb-1">Business Name</p>
-                    <p className="font-medium">Thompson Retail Solutions</p>
+                    <p className="font-medium">{merchant.businessName}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500 mb-1">
-                      Business Category
-                    </p>
-                    <p className="font-medium">E-commerce / Retail</p>
+                    <p className="text-sm text-slate-500 mb-1">Business Category</p>
+                    <p className="font-medium">{merchant.businessCategory}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500 mb-1">
-                      Contact Number
-                    </p>
-                    <p className="font-medium">+91 98765 43210</p>
+                    <p className="text-sm text-slate-500 mb-1">Contact Number</p>
+                    <p className="font-medium">{merchant.contactNumber}</p>
                   </div>
                 </div>
-
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm text-slate-500 mb-1">
-                      Business Address
-                    </p>
-                    <p className="font-medium">
-                      42 Commerce Avenue, Mumbai, MH 400001
-                    </p>
+                    <p className="text-sm text-slate-500 mb-1">Business Address</p>
+                    <p className="font-medium">{merchant.address}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500 mb-1">
-                      Settlement Account
-                    </p>
-                    <p className="font-medium">HDFC Bank ••••3456</p>
+                    <p className="text-sm text-slate-500 mb-1">Settlement Account</p>
+                    <p className="font-medium">{merchant.bankAccount}</p>
                   </div>
                   <div>
                     <p className="text-sm text-slate-500 mb-1">KYC Status</p>
                     <div className="flex items-center">
-                      <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full flex items-center">
-                        <span className="w-1.5 h-1.5 bg-green-600 rounded-full mr-1"></span>
-                        Complete
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full flex items-center ${
+                          merchant.kycStatus === "Complete"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full mr-1 ${
+                            merchant.kycStatus === "Complete" ? "bg-green-600" : "bg-yellow-600"
+                          }`}
+                        ></span>
+                        {merchant.kycStatus}
                       </span>
                     </div>
                   </div>
@@ -176,3 +219,5 @@ export default function Profile() {
     </div>
   );
 }
+
+export default Profile;
