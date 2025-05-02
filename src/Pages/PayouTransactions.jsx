@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Check,
   X,
@@ -6,7 +6,6 @@ import {
   ArrowDown,
   ArrowUp,
   ChevronDown,
-  EyeIcon,
   Calendar,
   ListFilter,
   Search,
@@ -19,10 +18,9 @@ export default function Transactions() {
   const [selectedTxnStatus, setSelectedTxnStatus] = useState("all");
   const [selectedPaymentMode, setSelectedPaymentMode] = useState("all");
   const [sortConfig, setSortConfig] = useState({
-    field: "time", // Default sort by time
+    field: "time",
     direction: "desc",
   });
-
   const [transactions, setTransactions] = useState([
     {
       id: 1,
@@ -38,10 +36,109 @@ export default function Transactions() {
       payerEmail: "payer@example.com",
       time: "2025-04-23T10:00:00Z",
       currencyType: "INR",
-      txnDate: "2025-04-23", // Added txnDate for date filtering
+      txnDate: "2025-04-23",
     },
-    // Add more transaction data here
+    {
+      id: 2,
+      txnId: "TXN5678",
+      mrchntId: "MRCHNT9012",
+      utr: "UTR5432",
+      amount: 250.5,
+      status: "pending",
+      paymentMode: "UPI",
+      AccNo: "0987654321",
+      ifscCode: "IFSC0098765",
+      payerMobile: "9123456789",
+      payerEmail: "payer2@example.com",
+      time: "2025-04-22T15:30:00Z",
+      currencyType: "INR",
+      txnDate: "2025-04-22",
+    },
+    {
+      id: 3,
+      txnId: "TXN9012",
+      mrchntId: "MRCHNT3456",
+      utr: "UTR1122",
+      amount: 500,
+      status: "failed",
+      paymentMode: "UPI",
+      AccNo: "1122334455",
+      ifscCode: "IFSC0023456",
+      payerMobile: "9234567890",
+      payerEmail: "payer3@example.com",
+      time: "2025-04-21T09:15:00Z",
+      currencyType: "INR",
+      txnDate: "2025-04-21",
+    },
   ]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch transactions from API
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setLoading(true);
+      setError(null);
+
+      const payload = {
+        merchantId: 1,
+        startDate: "2025-03-01",
+        endDate: "2025-04-01",
+        txnStatus: "All",
+        searchValue: "",
+        pageNum: 2,
+        pageSize: 100,
+      };
+
+      try {
+        const response = await fetch(
+          "https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiPayoutList",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("API Response:", result); // Debug: Log API response
+
+        // Map API response to expected format
+        const mappedTransactions = (result.data || []).map((item) => ({
+          id: item.id || item.transactionId || `temp-${Math.random()}`, // Fallback ID
+          txnId: item.txnId || "Unknown",
+          mrchntId: item.mrchntId || item.merchantId || "Unknown",
+          utr: item.utr || "Unknown",
+          amount: parseFloat(item.amount) || 0,
+          status: (item.status || "unknown").toLowerCase(),
+          paymentMode: item.paymentMode || "Unknown",
+          AccNo: item.AccNo || item.accountNumber || "Unknown",
+          ifscCode: item.ifscCode || "Unknown",
+          payerMobile: item.payerMobile || "Unknown",
+          payerEmail: item.payerEmail || "Unknown",
+          time: item.time || item.txnTime || new Date().toISOString(),
+          currencyType: item.currencyType || "INR",
+          txnDate: item.txnDate || item.date || new Date().toISOString().split("T")[0],
+        }));
+
+        console.log("Mapped Transactions:", mappedTransactions); // Debug: Log mapped data
+        setTransactions(mappedTransactions.length > 0 ? mappedTransactions : transactions); // Fallback to sample data if empty
+      } catch (err) {
+        console.error("API Error:", err); // Debug: Log error
+        setError(`Failed to fetch transactions: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -72,17 +169,18 @@ export default function Transactions() {
   const formatAmount = (amount, currencyType) => {
     const formatter = new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency: currencyType,
+      currency: currencyType || "INR",
       minimumFractionDigits: 2,
     });
-    return formatter.format(amount);
+    return formatter.format(amount || 0);
   };
 
   const formatUtr = (utrStr) => {
-    return utrStr;
+    return utrStr || "N/A";
   };
 
   const formatDate = (dateStr) => {
+    if (!dateStr) return "N/A";
     const date = new Date(dateStr);
     return date.toLocaleDateString("en-GB", {
       day: "2-digit",
@@ -92,6 +190,7 @@ export default function Transactions() {
   };
 
   const formatTime = (timeStr) => {
+    if (!timeStr) return "N/A";
     const date = new Date(timeStr);
     return date.toLocaleTimeString("en-GB", {
       hour: "2-digit",
@@ -164,19 +263,19 @@ export default function Transactions() {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return (
-          String(transaction.id).toLowerCase().includes(query) ||
-          transaction.txnId.toLowerCase().includes(query) ||
-          transaction.mrchntId.toLowerCase().includes(query) ||
-          transaction.utr.toLowerCase().includes(query) ||
-          String(transaction.amount).includes(query) ||
-          transaction.status.toLowerCase().includes(query) ||
-          transaction.paymentMode.toLowerCase().includes(query) ||
-          transaction.AccNo?.toLowerCase().includes(query) ||
-          transaction.ifscCode?.toLowerCase().includes(query) ||
-          transaction.payerMobile?.includes(query) ||
-          transaction.payerEmail?.toLowerCase().includes(query) ||
-          formatDate(transaction.txnDate).toLowerCase().includes(query) ||
-          formatTime(transaction.time).toLowerCase().includes(query)
+          String(transaction.id || "").toLowerCase().includes(query) ||
+          (transaction.txnId || "").toLowerCase().includes(query) ||
+          (transaction.mrchntId || "").toLowerCase().includes(query) ||
+          (transaction.utr || "").toLowerCase().includes(query) ||
+          String(transaction.amount || "").includes(query) ||
+          (transaction.status || "").toLowerCase().includes(query) ||
+          (transaction.paymentMode || "").toLowerCase().includes(query) ||
+          (transaction.AccNo || "").toLowerCase().includes(query) ||
+          (transaction.ifscCode || "").toLowerCase().includes(query) ||
+          (transaction.payerMobile || "").includes(query) ||
+          (transaction.payerEmail || "").toLowerCase().includes(query) ||
+          (formatDate(transaction.txnDate) || "").toLowerCase().includes(query) ||
+          (formatTime(transaction.time) || "").toLowerCase().includes(query)
         );
       }
 
@@ -184,15 +283,19 @@ export default function Transactions() {
     })
     .sort((a, b) => {
       const { field, direction } = sortConfig;
-
-      if (a[field] < b[field]) {
+      const aValue = a[field] || "";
+      const bValue = b[field] || "";
+      if (aValue < bValue) {
         return direction === "asc" ? -1 : 1;
       }
-      if (a[field] > b[field]) {
+      if (aValue > bValue) {
         return direction === "asc" ? 1 : -1;
       }
       return 0;
     });
+
+  // Debug: Log filtered transactions
+  console.log("Filtered Transactions:", filteredTransactions);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -315,115 +418,131 @@ export default function Transactions() {
           </div>
         </div>
 
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  {[
-                    "id",
-                    "txnId",
-                    "mrchntId",
-                    "utr",
-                    "amount",
-                    "status",
-                    "paymentMode",
-                    "AccNo",
-                    "ifscCode",
-                    "txnDate", // Added Date column
-                    "time", // Added Time column
-                  ].map((key) => (
-                    <th
-                      key={key}
-                      className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      <div
-                        className="flex items-center cursor-pointer"
-                        onClick={() => handleSort(key)}
+        {/* Loading and Error States */}
+        {loading && (
+          <div className="text-center py-4">
+            <p className="text-gray-500">Loading transactions...</p>
+          </div>
+        )}
+        {error && (
+          <div className="text-center py-4">
+            <p className="text-red-500">{error}</p>
+          </div>
+        )}
+
+        {/* Transactions Table */}
+        {!loading && !error && (
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {[
+                      "id",
+                      "txnId",
+                      "mrchntId",
+                      "utr",
+                      "amount",
+                      "status",
+                      "paymentMode",
+                      "AccNo",
+                      "ifscCode",
+                      "txnDate",
+                      "time",
+                    ].map((key) => (
+                      <th
+                        key={key}
+                        className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
-                        {key === "txnDate"
-                          ? "Date"
-                          : key === "time"
-                          ? "Time"
-                          : key}
-                        {getSortIcon(key)}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredTransactions.length > 0 ? (
-                  filteredTransactions.map((transaction) => (
-                    <tr
-                      key={transaction.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
-                        {transaction.id}
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-                        {transaction.txnId}
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-                        {transaction.mrchntId}
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-                        {formatUtr(transaction.utr)}
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {formatAmount(
-                          transaction.amount,
-                          transaction.currencyType
-                        )}
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
-                            transaction.status
-                          )}`}
+                        <div
+                          className="flex items-center cursor-pointer"
+                          onClick={() => handleSort(key)}
                         >
-                          {getStatusIcon(transaction.status)}
-                          <span className="ml-1 capitalize">
-                            {transaction.status}
+                          {key === "txnDate"
+                            ? "Date"
+                            : key === "time"
+                            ? "Time"
+                            : key}
+                          {getSortIcon(key)}
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredTransactions.length > 0 ? (
+                    filteredTransactions.map((transaction) => (
+                      <tr
+                        key={transaction.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
+                          {transaction.id}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {transaction.txnId}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {transaction.mrchntId}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {formatUtr(transaction.utr)}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {formatAmount(
+                            transaction.amount,
+                            transaction.currencyType
+                          )}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
+                              transaction.status
+                            )}`}
+                          >
+                            {getStatusIcon(transaction.status)}
+                            <span className="ml-1 capitalize">
+                              {transaction.status}
+                            </span>
                           </span>
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {transaction.paymentMode}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {transaction.AccNo}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {transaction.payerMobile}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {transaction.ifscCode}
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-                        {formatDate(transaction.txnDate)}
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-                        {formatTime(transaction.time)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {transaction.paymentMode}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {transaction.AccNo}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {transaction.payerMobile}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {transaction.ifscCode}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {formatDate(transaction.txnDate)}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {formatTime(transaction.time)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="11"
+                        className="px-6 py-4 text-center text-sm text-gray-500"
+                      >
+                        No transactions found
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan="11" // Updated colspan to includeclassName="px-6 py-4 text-center text-sm text-gray-500"
-                    >
-                      No transactions found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
