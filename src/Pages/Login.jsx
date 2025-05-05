@@ -239,7 +239,7 @@ export default function Login() {
             {!success && (
               <div className="mt-8 text-center text-sm text-slate-600">
                 Don’t have an account?{" "}
-                <a href="#signup" className="text-blue-600 hover:text-blue-500">
+                <a href="/register" className="text-blue-600 hover:text-blue-500">
                   Sign Up
                 </a>
               </div>
