@@ -17,6 +17,13 @@ export default function Login() {
     setLoading(true);
     setError("");
     
+    // Check if credentials match the specific ones you want to allow
+    if (loginForm.email !== "1234234234@gmail.com" || loginForm.password !== "test@123456") {
+      setError("Invalid email or password. Please try again.");
+      setLoading(false);
+      return;
+    }
+    
     try {
       const response = await fetch("https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiLogin", {
         method: "POST",
