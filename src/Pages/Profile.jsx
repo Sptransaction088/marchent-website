@@ -118,12 +118,12 @@ function Profile() {
                     </div>
                   </div>
                 </div>
-                <div className="border-t border-slate-100 py-2">
+                {/* <div className="border-t border-slate-100 py-2">
                   <button className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-slate-100">
                     <LogOut size={16} className="mr-3" />
                     Sign Out
                   </button>
-                </div>
+                </div> */}
               </div>
             )}
           </div>

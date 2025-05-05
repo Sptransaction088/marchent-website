@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/dashboard";
+
   const [showPassword, setShowPassword] = useState(false);
   const [loginForm, setLoginForm] = useState({
     email: "",
@@ -12,59 +17,77 @@ export default function Login() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  // Check if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     setLoading(true);
     setError("");
-    
-    // Check if credentials match the specific ones you want to allow
+
+    // Validate credentials (dummy check for the example)
     if (loginForm.email !== "1234234234@gmail.com" || loginForm.password !== "test@123456") {
       setError("Invalid email or password. Please try again.");
       setLoading(false);
       return;
     }
-    
+
     try {
-      const response = await fetch("https://tpgapi.pvearnfast.com/api/tpgApi/merchant/apiLogin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: loginForm.email,
-          password: loginForm.password,
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed. Please try again.");
-      }
-      
-      // Handle successful login
-      console.log("Login successful:", data);
-      setSuccess(true);
-      
-      // If you receive a token, you might want to store it
-      if (data.token) {
-        localStorage.setItem("authToken", data.token);
-        
-        // If remember me is checked, you can use something like
+      // Simulate API call to authenticate
+      setTimeout(() => {
+        // Generate and store the auth token
+        const mockToken = "mock-jwt-token-" + Date.now();
+        localStorage.setItem("authToken", mockToken);
+
+        // If remember me is checked
         if (loginForm.rememberMe) {
-          // Store in a more persistent way or set longer expiry
           localStorage.setItem("rememberUser", loginForm.email);
         }
-      }
-      
-      // Redirect user to dashboard
-      window.location.href = "/dashboard";
-      
+
+        setSuccess(true);
+
+        // Redirect after a brief delay
+        setTimeout(() => {
+          window.dispatchEvent(new Event("storage"));
+          navigate(from, { replace: true });
+        }, 1000);
+      }, 800);
     } catch (err) {
       console.error("Login error:", err);
       setError(err.message || "Failed to connect to the server. Please try again.");
-    } finally {
       setLoading(false);
+    }
+  };
+
+  // Function to make an API call after login
+  const getAPIData = async (merchantId) => {
+    const token = localStorage.getItem("authToken"); // Get the auth token
+    if (!token) {
+      console.error("Auth token is missing!");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/your-endpoint", {
+        method: "GET", // or POST depending on your API
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // Include token in Authorization header
+        },
+        body: JSON.stringify({ merchantId }), // Include merchantId in the request body
+      });
+
+      const data = await response.json();
+      console.log(data);
+      return data;
+    } catch (err) {
+      console.error("Error fetching data:", err);
     }
   };
 
@@ -91,13 +114,13 @@ export default function Login() {
                 <p className="text-slate-600">You are now being redirected...</p>
               </div>
             ) : (
-              <div>
+              <form onSubmit={handleSubmit}>
                 {error && (
                   <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
                     {error}
                   </div>
                 )}
-                
+
                 <div className="space-y-5">
                   <div>
                     <label
@@ -190,7 +213,7 @@ export default function Login() {
                   </div>
 
                   <button
-                    onClick={handleSubmit}
+                    type="submit"
                     className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     disabled={loading}
                   >
@@ -210,35 +233,19 @@ export default function Login() {
                     )}
                   </button>
                 </div>
-              </div>
+              </form>
             )}
 
             {!success && (
-              <div className="mt-6">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-200"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-slate-500">
-                      Don't have an account?
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <a
-                    href="/register"
-                    className="w-full flex items-center justify-center px-4 py-2 border border-slate-300 rounded-lg shadow-sm bg-white text-slate-700 hover:bg-slate-50"
-                  >
-                    Create an account
-                  </a>
-                </div>
+              <div className="mt-8 text-center text-sm text-slate-600">
+                Don’t have an account?{" "}
+                <a href="#signup" className="text-blue-600 hover:text-blue-500">
+                  Sign Up
+                </a>
               </div>
             )}
           </div>
         </div>
-
-      
       </div>
     </div>
   );

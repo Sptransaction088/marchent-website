@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaBalanceScale, FaCreativeCommonsPdAlt } from "react-icons/fa";
-import { WalletIcon } from "@heroicons/react/16/solid";
 import { LiaRupeeSignSolid } from "react-icons/lia";
 
 export default function Sidebar() {
@@ -22,6 +21,7 @@ export default function Sidebar() {
   const [activeItem, setActiveItem] = useState("dashboard");
   const [expandedSubMenu, setExpandedSubMenu] = useState(null);
   const [hoverItem, setHoverItem] = useState(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const menuItemRefs = useRef({});
   const containerRef = useRef(null);
   const navigate = useNavigate();
@@ -75,11 +75,19 @@ export default function Sidebar() {
           setExpandedSubMenu(null);
         }
       }
+      
+      // Also close logout confirmation if clicking outside
+      if (showLogoutConfirm) {
+        const logoutConfirmElement = document.getElementById('logout-confirm-modal');
+        if (logoutConfirmElement && !logoutConfirmElement.contains(event.target)) {
+          setShowLogoutConfirm(false);
+        }
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [expandedSubMenu]);
+  }, [expandedSubMenu, showLogoutConfirm]);
 
   const handleMenuItemClick = (itemId, path, hasSubMenu) => {
     setActiveItem(itemId);
@@ -119,6 +127,24 @@ export default function Sidebar() {
     }
   };
 
+  // Handle logout
+  const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  // Confirm logout
+  const confirmLogout = () => {
+    // Clear authentication data
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("rememberUser");
+    
+    // Trigger storage event for other tabs
+    window.dispatchEvent(new Event("storage"));
+    
+    // Show success message or redirect immediately
+    navigate("/login", { replace: true });
+  };
+
   // Show tooltip for collapsed sidebar
   const renderTooltip = (item) => {
     if (!expanded && hoverItem === item.id) {
@@ -135,7 +161,7 @@ export default function Sidebar() {
     {
       id: "dashboard",
       icon: <LayoutDashboard size={20} />,
-      path: "/",
+      path: "/dashboard",
       label: "Dashboard",
       color: "from-indigo-400 to-indigo-600",
     },
@@ -247,7 +273,7 @@ export default function Sidebar() {
           <div className="flex items-center">
             <div className="h-20 w-20">
               <img
-                src="/assets/logon.png"
+                src="../assets/logon.png"
                 alt="logo"
                 className="h-full w-full object-contain"
               />
@@ -259,7 +285,7 @@ export default function Sidebar() {
         ) : (
           <div className="mx-auto">
             <img
-              src="/assets/logon.png"
+              src="../assets/logon.png"
               alt="logo"
               className="h-20 w-20 object-contain"
             />
@@ -469,13 +495,54 @@ export default function Sidebar() {
               </p>
             </div>
           )}
-          {expanded && (
-            <button className="text-blue-300 hover:text-white p-1.5 rounded-full hover:bg-blue-800/50 transition-all">
+          {expanded ? (
+            <button 
+              className="text-blue-300 hover:text-white p-1.5 rounded-full hover:bg-blue-800/50 transition-all"
+              onClick={handleLogout}
+              title="Logout"
+            >
+              <LogOut size={14} />
+            </button>
+          ) : (
+            <button 
+              className="text-blue-300 hover:text-white mt-2 p-1.5 rounded-full hover:bg-blue-800/50 transition-all mx-auto block"
+              onClick={handleLogout}
+              title="Logout"
+            >
               <LogOut size={14} />
             </button>
           )}
         </div>
       </div>
+
+      {/* Logout confirmation modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div 
+            id="logout-confirm-modal"
+            className="bg-white rounded-lg shadow-xl overflow-hidden max-w-md w-full mx-4 animate-fadeIn"
+          >
+            <div className="p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Confirm Logout</h3>
+              <p className="text-gray-600">Are you sure you want to logout from your account?</p>
+            </div>
+            <div className="flex items-center justify-end gap-2 bg-gray-50 px-6 py-3 border-t border-gray-200">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Global CSS */}
       <style jsx global>{`
@@ -512,6 +579,19 @@ export default function Sidebar() {
           to {
             opacity: 1;
             transform: translateX(0) scale(1);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
           }
         }
         .bg-grid-pattern {
