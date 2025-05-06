@@ -29,7 +29,7 @@ export default function Register() {
     password: "",
     confirmPassword: "",
     businessName: "",
-    businessType: "",
+    businessCategory: "",
     agreeToTerms: false,
   });
 
@@ -87,7 +87,7 @@ export default function Register() {
       phone: registerForm.phone,
       password: registerForm.password,
       businessName: registerForm.businessName,
-      businessType: registerForm.businessType,
+      businessCategory: registerForm.businessCategory,
     };
     
     setIsSubmitting(true);
@@ -539,28 +539,28 @@ export default function Register() {
 
                   <div>
                     <label
-                      htmlFor="businessType"
+                      htmlFor="businessCategory"
                       className="block text-sm font-medium text-slate-700 mb-1"
                     >
-                      Business Type
+                      Business Category
                     </label>
                     <select
-                      id="businessType"
+                      id="businessCategory"
                       className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={registerForm.businessType}
+                      value={registerForm.businessCategory}
                       onChange={(e) =>
                         setRegisterForm({
                           ...registerForm,
-                          businessType: e.target.value,
+                          businessCategory: e.target.value,
                         })
                       }
                       required
                     >
-                      <option value="">Select business type</option>
-                      <option value="retail">Retail</option>
-                      <option value="ecommerce">E-commerce</option>
-                      <option value="service">Service Business</option>
-                      <option value="saas">SaaS / Software</option>
+                      <option value="">Select Business Category</option>
+                      <option value="private limited">Private Limited</option>
+                      <option value="patnership">Patnership</option>
+                      <option value="properietor">Proprietor</option>
+                      <option value="(opc)pvt ltd">(OPC)Pvt Ltd</option>
                       <option value="other">Other</option>
                     </select>
                   </div>
